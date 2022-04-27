@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId} = require('mongodb');
 require('dotenv').config()
+var jwt = require('jsonwebtoken');
 const app = express()
 const port = process.env.PORT || 5000
 
@@ -25,6 +26,14 @@ async function run(){
         const eventCollection = client.db("eventPost").collection('event')
 
 
+        // access token with jwt
+        app.post('/login',async(req,res)=>{
+                const user = req.body
+                const accessToken= jwt.sign(user,process.env.ACCESS_TOKEN,{
+                    expiresIn:"1d"
+                })
+                res.send(accessToken)
+        })
         // all service    http://localhost:5000/service
         // search api     http://localhost:5000/service?name=Host cloth shop
         app.get("/service",async (req,res)=>{
@@ -44,6 +53,8 @@ async function run(){
 
         // volentier get api  http://localhost:5000/volentier
         app.get('/volentier',async(req,res)=>{
+            const authorization = req.headers.authorization
+            const email = req.body.email
             const query ={}
             const cursor = volentierCollection.find(query)
             const result = await cursor.toArray()
